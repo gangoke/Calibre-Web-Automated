@@ -45,13 +45,14 @@
           .catch(error => console.error("Error:", error));
       }
 
-      function openDownloadLink(e) {
+      function openShelfmarkSearch(e) {
           e.preventDefault();
           var queryEl = document.getElementById('query');
           var query = queryEl ? queryEl.value.trim() : '';
+          var baseUrl = {{ g.shelfmark_url | tojson }};
           var url = query
-              ? '{{ g.download_url }}/?q=' + encodeURIComponent(query).replace(/%20/g, '+') + '&content_type=ebook'
-              : '{{ g.download_url }}';
+              ? baseUrl + '/?q=' + encodeURIComponent(query).replace(/%20/g, '+') + '&content_type=ebook'
+              : baseUrl;
           window.open(url, '_blank');
       }
 
@@ -132,8 +133,10 @@
           {% if current_user.is_authenticated or g.allow_anonymous %}
           <ul class="nav navbar-nav ">
             <li><a href="{{url_for('search.advanced_search')}}" id="advanced_search"><span class="glyphicon glyphicon-search" style="padding-left: 10px; padding-right: 6px;"></span><span class="hidden-sm"> {{_('Advanced Search')}}</span></a></li>
-            <li style="padding: 13px 4px; color: #ccc;">|</li>
-            <li><a id="shelfmark_search" href="#" onclick="openDownloadLink(event)"><span class="glyphicon glyphicon-search" style="padding-left: 10px; padding-right: 6px;"></span><span class="hidden-sm"> {{_('Shelfmark Search')}}</span></a></li>
+            {% if g.shelfmark_enabled and current_user.role_shelfmark() %}
+            <li class="divider-vertical"></li>
+            <li><a id="shelfmark_search" href="#" onclick="openShelfmarkSearch(event)"><span class="glyphicon glyphicon-search" style="padding-left: 10px; padding-right: 6px;"></span><span class="hidden-sm"> {{_('Shelfmark Search')}}</span></a></li>
+            {% endif %}
           </ul>
           {% endif %}
           <ul class="nav navbar-nav navbar-right" id="main-nav">
