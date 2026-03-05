@@ -135,7 +135,7 @@ def before_request():
     #    pass    # ? fails on requesting /ajax/emailstat during restart ?
     g.constants = constants
     g.google_site_verification = os.getenv('GOOGLE_SITE_VERIFICATION', '')
-    g.download_url = config.config_shelfmark_url or os.getenv('SHELFMARK_URL', '')
+    g.download_url = (config.config_shelfmark_url or os.getenv('SHELFMARK_URL', '')).rstrip('/')
     g.shelfmark_enabled = config.config_shelfmark_enabled
     g.allow_registration = config.config_public_reg
     g.allow_anonymous = config.config_anonbrowse
@@ -637,6 +637,7 @@ def edit_user_table():
                                  visiblility=visibility,
                                  all_roles=constants.ALL_ROLES,
                                  kobo_support=kobo_support,
+                                 shelfmark_enabled=config.config_shelfmark_enabled,
                                  sidebar_settings=constants.sidebar_settings,
                                  title=_("Edit Users"),
                                  page="usertable")
@@ -801,7 +802,8 @@ def edit_list_user(param):
                       [constants.ROLE_ADMIN, constants.ROLE_PASSWD, constants.ROLE_EDIT_SHELFS]:
                         raise Exception(_("Guest can't have this role"))
                     # check for valid value, last on checks for power of 2 value
-                    if value > 0 and value <= constants.ROLE_VIEWER and (value & value - 1 == 0 or value == 1):
+                    max_role = constants.ROLE_SHELFMARK if config.config_shelfmark_enabled else constants.ROLE_VIEWER
+                    if value > 0 and value <= max_role and (value & value - 1 == 0 or value == 1):
                         if vals['value'] == 'true':
                             user.role |= value
                         elif vals['value'] == 'false':
