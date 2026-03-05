@@ -38,7 +38,6 @@ services:
       ### This will let you see your changes in realtime, test ect. You can use build.sh to prepare images with your changes.
       ### For example:
       # /your/dev/env/cps:/app/calibre-web-automated/cps
-      - ./cps:/app/calibre-web-automated/cps
 
     ports:
       # Change the first number to change the port you want to access the Web UI, not the second
