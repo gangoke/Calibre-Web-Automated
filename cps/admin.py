@@ -136,6 +136,7 @@ def before_request():
     g.constants = constants
     g.google_site_verification = os.getenv('GOOGLE_SITE_VERIFICATION', '')
     g.download_url = config.config_shelfmark_url or os.getenv('SHELFMARK_URL', '')
+    g.shelfmark_enabled = config.config_shelfmark_enabled
     g.allow_registration = config.config_public_reg
     g.allow_anonymous = config.config_anonbrowse
     g.allow_upload = config.config_uploading
@@ -2432,6 +2433,7 @@ def _configuration_update_helper():
         reboot_required |= _config_string(to_save, "config_limiter_options")
 
         # Shelfmark configuration
+        _config_checkbox(to_save, "config_shelfmark_enabled")
         _config_string(to_save, "config_shelfmark_url")
 
         # Rarfile Content configuration

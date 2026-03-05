@@ -618,11 +618,17 @@
   <div class="settings-container">
     <h4 class="settings-section-header">{{_('Shelfmark Settings')}}</h4>
         <div class="form-group">
-          <label for="config_shelfmark_url">{{_('Shelfmark URL')}}</label>
-          <div class="help-block">{{_('URL or absolute path used for the Shelfmark Search button (e.g. https://example.com or /path/to/search). If set via the SHELFMARK_URL environment variable and left blank here, the environment variable value will be used.')}}</div>
-          <input type="text" class="form-control" id="config_shelfmark_url" name="config_shelfmark_url"
-                 value="{{ config.config_shelfmark_url if config.config_shelfmark_url else shelfmark_env_url }}"
-                 autocomplete="off" placeholder="https://example.com or /path/to/shelfmark">
+          <input type="checkbox" id="config_shelfmark_enabled" data-control="shelfmark_url_settings" name="config_shelfmark_enabled" {% if config.config_shelfmark_enabled %}checked{% endif %}>
+          <label for="config_shelfmark_enabled">{{_('Enable Shelfmark')}}</label>
+        </div>
+        <div data-related="shelfmark_url_settings">
+          <div class="form-group">
+            <label for="config_shelfmark_url">{{_('Shelfmark URL')}}</label>
+            <div class="help-block">{{_('URL or absolute path used for the Shelfmark Search button (e.g. https://shelfmark.example.com or /path/to/shelfmark). If set via the SHELFMARK_URL environment variable and left blank here, the environment variable value will be used.')}}</div>
+            <input type="text" class="form-control" id="config_shelfmark_url" name="config_shelfmark_url"
+                   value="{{ config.config_shelfmark_url if config.config_shelfmark_url else shelfmark_env_url }}"
+                   autocomplete="off" placeholder="https://shelfmark.example.com or /path/to/shelfmark">
+          </div>
         </div>
   </div>
 
