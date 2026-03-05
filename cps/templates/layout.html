@@ -122,6 +122,8 @@
           {% if current_user.is_authenticated or g.allow_anonymous %}
           <ul class="nav navbar-nav ">
             <li><a href="{{url_for('search.advanced_search')}}" id="advanced_search"><span class="glyphicon glyphicon-search" style="padding-left: 10px; padding-right: 6px;"></span><span class="hidden-sm"> {{_('Advanced Search')}}</span></a></li>
+            <li style="padding: 13px 4px; color: #ccc;">|</li>
+            <li><a id="download-books" href="/download" target="_blank" data-text="{{_('Download Books')}}"><span style="font-size:1.1em;">☠</span> <span class="hidden-sm">{{_('Download Books')}}</span></a></li>
           </ul>
           {% endif %}
           <ul class="nav navbar-nav navbar-right" id="main-nav">
