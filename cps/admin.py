@@ -135,7 +135,7 @@ def before_request():
     #    pass    # ? fails on requesting /ajax/emailstat during restart ?
     g.constants = constants
     g.google_site_verification = os.getenv('GOOGLE_SITE_VERIFICATION', '')
-    g.download_url = os.getenv('SHELFMARK_URL', '/')
+    g.download_url = config.config_shelfmark_url or os.getenv('SHELFMARK_URL', '')
     g.allow_registration = config.config_public_reg
     g.allow_anonymous = config.config_anonbrowse
     g.allow_upload = config.config_uploading
@@ -556,6 +556,7 @@ def configuration():
                                  config=config,
                                  provider=oauth_bb.oauthblueprints,
                                  feature_support=feature_support,
+                                 shelfmark_env_url=os.getenv('SHELFMARK_URL', ''),
                                  title=_("Basic Configuration"), page="config")
 
 
@@ -2429,6 +2430,9 @@ def _configuration_update_helper():
         reboot_required |= _config_checkbox(to_save, "config_ratelimiter")
         reboot_required |= _config_string(to_save, "config_limiter_uri")
         reboot_required |= _config_string(to_save, "config_limiter_options")
+
+        # Shelfmark configuration
+        _config_string(to_save, "config_shelfmark_url")
 
         # Rarfile Content configuration
         _config_string(to_save, "config_rarfile_location")
