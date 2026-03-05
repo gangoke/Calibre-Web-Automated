@@ -18,7 +18,6 @@ changelogs
 cwa-wiki
 wiki_images
 .devcontainer
-tmpclaude*
 
 # Test infrastructure (not needed in production image)
 tests/
