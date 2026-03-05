@@ -135,6 +135,7 @@ def before_request():
     #    pass    # ? fails on requesting /ajax/emailstat during restart ?
     g.constants = constants
     g.google_site_verification = os.getenv('GOOGLE_SITE_VERIFICATION', '')
+    g.download_url = os.getenv('SHELFMARK_URL', '/')
     g.allow_registration = config.config_public_reg
     g.allow_anonymous = config.config_anonbrowse
     g.allow_upload = config.config_uploading

@@ -26,7 +26,6 @@ docs/
 test_venv
 cwa.code-workspace
 tmpclaude*
-package-lock.json
 
 
 # Test Scripts

@@ -4,6 +4,7 @@ services:
     image: crocodilestick/calibre-web-automated:latest
     container_name: calibre-web-automated
     environment:
+      # - SHELFMARK_URL=https://shelfmark.domain.com #or /path #URL to your Shelfmark Instance. Example: https://shelfmark.domain.com, or if setup as a path of your CWA domain Example: https://cwa.domain.com/shelfmark, use /shelfmark
       # Only change these if you know what you're doing
       - PUID=1000
       - PGID=1000
@@ -37,7 +38,7 @@ services:
       ### This will let you see your changes in realtime, test ect. You can use build.sh to prepare images with your changes.
       ### For example:
       # /your/dev/env/cps:/app/calibre-web-automated/cps
-      - ./cps:/app/calibre-web-automated/cps   # ← add this
+      - ./cps:/app/calibre-web-automated/cps
 
     ports:
       # Change the first number to change the port you want to access the Web UI, not the second
