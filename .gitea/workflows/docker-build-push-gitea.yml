@@ -78,8 +78,7 @@ jobs:
             ${{ env.IMAGE_GHCR }}
             ${{ env.IMAGE_DOCKERHUB }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
+            type=sha,format=short
             type=raw,value=latest,enable=${{ gitea.ref == format('refs/heads/{0}', gitea.event.repository.default_branch) }}
 
       - name: Show resolved image tags
