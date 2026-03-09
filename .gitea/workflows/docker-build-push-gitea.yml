@@ -28,7 +28,8 @@ jobs:
           echo "IMAGE=${REGISTRY}/$repo_lc" >> "$envfile"
           echo "IMAGE_GHCR=ghcr.io/$repo_lc" >> "$envfile"
           echo "IMAGE_DOCKERHUB=${{ secrets.DOCKERHUB_USERNAME }}/$repo_name_lc" >> "$envfile"
-          echo "BUILDCACHE_REF=${REGISTRY}/${repo_lc}-cache:buildcache" >> "$envfile"
+          # Cache is intentionally stored only in the primary (Gitea) registry.
+          echo "GITEA_BUILDCACHE_REF=${REGISTRY}/${repo_lc}-cache:buildcache" >> "$envfile"
 
       - name: Set up QEMU (multi-arch)
         uses: docker/setup-qemu-action@v3
@@ -56,14 +57,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
+      - name: Extract metadata (Gitea full tags)
+        id: meta_gitea
         uses: docker/metadata-action@v5
         with:
-          images: |
-            ${{ env.IMAGE }}
-            ${{ env.IMAGE_GHCR }}
-            ${{ env.IMAGE_DOCKERHUB }}
+          images: ${{ env.IMAGE }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -72,23 +70,48 @@ jobs:
             type=sha,format=short
             type=raw,value=latest,enable=${{ gitea.ref == format('refs/heads/{0}', gitea.event.repository.default_branch) }}
 
+      - name: Extract metadata (GHCR and Docker Hub limited tags)
+        id: meta_external
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.IMAGE_GHCR }}
+            ${{ env.IMAGE_DOCKERHUB }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=raw,value=latest,enable=${{ gitea.ref == format('refs/heads/{0}', gitea.event.repository.default_branch) }}
+
       - name: Show resolved image tags
         run: |
           echo "Images:"
           echo "- $IMAGE"
           echo "- $IMAGE_GHCR"
           echo "- $IMAGE_DOCKERHUB"
-          echo "Tags:"
-          echo "${{ steps.meta.outputs.tags }}"
+          echo "Cache (Gitea only): $GITEA_BUILDCACHE_REF"
+          echo "Gitea tags:"
+          echo "${{ steps.meta_gitea.outputs.tags }}"
+          echo "GHCR/Docker Hub tags:"
+          echo "${{ steps.meta_external.outputs.tags }}"
 
-      - name: Build and push image
+      - name: Build and push image (Gitea full tags)
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.BUILDCACHE_REF }}
-          cache-to: type=registry,ref=${{ env.BUILDCACHE_REF }},mode=max
+          tags: ${{ steps.meta_gitea.outputs.tags }}
+          labels: ${{ steps.meta_gitea.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.GITEA_BUILDCACHE_REF }}
+          cache-to: type=registry,ref=${{ env.GITEA_BUILDCACHE_REF }},mode=max
+
+      - name: Build and push image (GHCR and Docker Hub limited tags)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta_external.outputs.tags }}
+          labels: ${{ steps.meta_external.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.GITEA_BUILDCACHE_REF }}
 
