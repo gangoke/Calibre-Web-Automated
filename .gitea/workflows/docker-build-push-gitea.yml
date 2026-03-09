@@ -1,0 +1,72 @@
+name: Build and Push Image
+on: 
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: ${{ vars.REGISTRY }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compute image refs (lowercase)
+        run: |
+          envfile="${GITHUB_ENV:-${GITEA_ENV:-}}"
+          if [ -z "$envfile" ]; then
+            echo "No env file found (GITHUB_ENV/GITEA_ENV)." >&2
+            exit 1
+          fi
+
+          repo_raw='${{ gitea.repository }}'
+          repo_lc="$(printf '%s' "$repo_raw" | tr '[:upper:]' '[:lower:]')"
+
+          echo "IMAGE_NAME=$repo_lc" >> "$envfile"
+          echo "IMAGE=${REGISTRY}/$repo_lc" >> "$envfile"
+          echo "BUILDCACHE_REF=${REGISTRY}/${repo_lc}-cache:buildcache" >> "$envfile"
+
+      - name: Set up QEMU (multi-arch)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ gitea.actor }}
+          password: ${{ secrets.TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+            type=raw,value=latest,enable=${{ gitea.ref == format('refs/heads/{0}', gitea.event.repository.default_branch) }}
+
+      - name: Show resolved image tags
+        run: |
+          echo "Image: $IMAGE"
+          echo "Tags:"
+          echo "${{ steps.meta.outputs.tags }}"
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.BUILDCACHE_REF }}
+          cache-to: type=registry,ref=${{ env.BUILDCACHE_REF }},mode=max
+

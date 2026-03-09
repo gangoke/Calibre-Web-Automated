@@ -2,6 +2,7 @@ README_images
 docker-compose.yml
 .git
 .github
+.gitea
 .gitignore
 .github/workflows
 .gitattributes
